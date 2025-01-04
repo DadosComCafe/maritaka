@@ -1,0 +1,7 @@
+- encontrar o arquivo csv ok
+
+- pega o arquivo csv e retorna um dataframe ok
+
+- converter o tipo da coluna de str para float ok
+
+- trás o cálculo das métricas ok

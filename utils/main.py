@@ -62,11 +62,13 @@ def get_dataframe_metrics(df_only_numeric: pd.DataFrame) -> list[Dict]:
     list_metrics = []
     for field in list_fields:
         list_metrics.append(
+            {field :
             {
                 "max": float(df_only_numeric[field].max()),
                 "min": float(df_only_numeric[field].min()),
                 "avg": float(df_only_numeric[field].mean()),
-                "sum": float(df_only_numeric.sum())
+                "sum": float(df_only_numeric[field].sum())
                 }
+            }
         )
     return list_metrics

@@ -1,8 +1,6 @@
 import pandas as pd
-from typing import Dict
+from typing import Dict, List
 
-file = "FastFoodNutritionMenu2.csv"
-df = pd.read_csv(file, sep=",")
 
 def get_dataframe(path: str, sep: str=",") -> pd.DataFrame:
     """Manipula o arquivo retornando um dataframe
@@ -72,3 +70,23 @@ def get_dataframe_metrics(df_only_numeric: pd.DataFrame) -> list[Dict]:
             }
         )
     return list_metrics
+
+
+def get_dataframe_from_list_dict(list_dict: List[Dict]) -> pd.DataFrame:
+    #TODO: melhorar essa função
+    return pd.DataFrame(list_dict)
+
+
+
+if __name__ == "__main__":
+    #import ipdb
+    #ipdb.set_trace()
+    file = "FastFoodNutritionMenu2.csv"
+    df = get_dataframe(file)
+    list_fields = ["Sodium", "Carbs", "Fiber", "Sugars", "Protein", "WeightWatchersPnts"]
+    df_only_numeric = get_dataframe_only_numeric(df, list_fields)
+    list_metrics = get_dataframe_metrics(df_only_numeric)
+    df_metrics = get_dataframe_from_list_dict(list_metrics)
+    with pd.ExcelWriter('analise_quantitativa.xlsx', engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Conteúdo do Arquivo', index=False)
+        df_metrics.to_excel(writer, sheet_name='Métricas', index=False)

@@ -2,6 +2,7 @@ import pandas as pd
 from typing import Dict, List
 
 
+
 def get_dataframe(path: str, sep: str=",") -> pd.DataFrame:
     """Manipula o arquivo retornando um dataframe
 
@@ -79,9 +80,12 @@ def get_dataframe_from_list_dict(list_dict: List[Dict]) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    #import ipdb
-    #ipdb.set_trace()
-    file = "FastFoodNutritionMenu2.csv"
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--filename")
+    argumento = parser.parse_args()
+    file = argumento.filename
+    print(f"File é: {file}")
     df = get_dataframe(file)
     list_fields = ["Sodium", "Carbs", "Fiber", "Sugars", "Protein", "WeightWatchersPnts"]
     df_only_numeric = get_dataframe_only_numeric(df, list_fields)

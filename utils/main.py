@@ -32,7 +32,7 @@ def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list) -> pd.DataFr
     return new_df
 
 
-def get_dataframe_metrics(df_only_numeric: pd.DataFrame) -> list[Dict]:
+def get_list_dict_metrics(df_only_numeric: pd.DataFrame) -> list[Dict]:
     """Cálcula o máximo, mínimo, a média e a soma para todos os campos do dataframe enviado.
 
     Args:
@@ -40,7 +40,7 @@ def get_dataframe_metrics(df_only_numeric: pd.DataFrame) -> list[Dict]:
 
     Returns:
         list[Dict]: Lista com todas as métricas para todos os campos contidos no dataframe, seguindo o exemplo (dado que o dataframe contenha
-        os seguintes campos: "Campo1" e "Campo2"):
+        os seguintes campos: "Campo1" e "Campo2"):[
         {"Campo1":
             {
             "max": 100,
@@ -55,7 +55,7 @@ def get_dataframe_metrics(df_only_numeric: pd.DataFrame) -> list[Dict]:
             "avg": 10,
             "sum": 2000
             }
-        }
+        }]
     """
     list_fields = list(df_only_numeric.keys())
     list_metrics = []
@@ -73,9 +73,26 @@ def get_dataframe_metrics(df_only_numeric: pd.DataFrame) -> list[Dict]:
     return list_metrics
 
 
-def get_dataframe_from_list_dict(list_dict: List[Dict]) -> pd.DataFrame:
-    #TODO: melhorar essa função
-    return pd.DataFrame(list_dict)
+def get_dataframe_from_list_dict(list_dicio: List[Dict]) -> pd.DataFrame:
+    """Da lista de dicionários recebida, converte em um dataframe, onde cada dicionário
+    se torna um dataframe, e todos são concatenados em um dataframe final.
+
+    Args:
+        list_dicio (List[Dict]): Lista de dicionários, oriundo da saída da função `get_list_dict_metrics` 
+
+    Returns:
+        pd.DataFrame: Dataframe com o conteúdo de cada dicionário na lista de dicionários usada como argumento.
+    """
+    lista_dataframes = []
+    value = {}
+    for n, dicio in enumerate(list_dicio):
+        name = list(dicio.keys())[0]
+        value["name"] = name
+        value.update(list_dicio[n][name])
+        lista_dataframes.append(pd.DataFrame([value]))
+    
+    df_all = pd.concat(lista_dataframes, ignore_index=True) 
+    return df_all
 
 
 
@@ -85,11 +102,10 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--filename")
     argumento = parser.parse_args()
     file = argumento.filename
-    print(f"File é: {file}")
     df = get_dataframe(file)
     list_fields = ["Sodium", "Carbs", "Fiber", "Sugars", "Protein", "WeightWatchersPnts"]
     df_only_numeric = get_dataframe_only_numeric(df, list_fields)
-    list_metrics = get_dataframe_metrics(df_only_numeric)
+    list_metrics = get_list_dict_metrics(df_only_numeric)
     df_metrics = get_dataframe_from_list_dict(list_metrics)
     with pd.ExcelWriter('analise_quantitativa.xlsx', engine='openpyxl') as writer:
         df.to_excel(writer, sheet_name='Conteúdo do Arquivo', index=False)

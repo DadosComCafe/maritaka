@@ -5,3 +5,9 @@
 - converter o tipo da coluna de str para float ok
 
 - trás o cálculo das métricas ok
+
+- exporta o xlsx ok
+
+- realiza a comparação entre dois xlsx exportados
+
+- exporta a comparação 

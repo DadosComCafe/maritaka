@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
 
@@ -94,6 +94,27 @@ def get_dataframe_from_list_dict(list_dicio: List[Dict]) -> pd.DataFrame:
     df_all = pd.concat(lista_dataframes, ignore_index=True) 
     return df_all
 
+def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") -> Tuple[pd.DataFrame]:
+    df1 = get_dataframe(path1, sep)
+    df2 = get_dataframe(path2, sep)
+    df1n = get_dataframe_only_numeric(df1, list_fields)
+    df2n = get_dataframe_only_numeric(df2, list_fields)
+    list_metrics1 = get_list_dict_metrics(df1n)
+    list_metrics2 = get_list_dict_metrics(df2n)
+    df1_metrics = get_dataframe_from_list_dict(list_metrics1)
+    df2_metrics = get_dataframe_from_list_dict(list_metrics2)
+    try:
+        with pd.ExcelWriter('analise_quantitativa.xlsx', engine="openpyxl") as writer:
+            name1 = f"{path1.split(".")[0]}"
+            name2 = f"{path2.split(".")[0]}"
+            df1.to_excel(writer, sheet_name=name1, index=False)
+            df1_metrics.to_excel(writer, sheet_name=f"Métricas {name1}")
+            df2.to_excel(writer, sheet_name=name2, index=False)
+            df2_metrics.to_excel(writer, sheet_name=f"Métricas {name2}")
+        return True
+    except Exception as e:
+        print(f"Deu merda: {e}")
+    #return final_df1, final_df2
 
 
 if __name__ == "__main__":

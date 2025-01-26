@@ -124,6 +124,7 @@ def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") ->
     list_metrics2 = get_list_dict_metrics(df2n)
     df1_metrics = get_dataframe_from_list_dict(list_metrics1)
     df2_metrics = get_dataframe_from_list_dict(list_metrics2)
+    df_comparation = compare_numeric_dataframes(df1=df1_metrics, df2=df2_metrics)
     try:
         with pd.ExcelWriter('analise_quantitativa.xlsx', engine="openpyxl") as writer:
             name1 = f"{path1.split(".")[0]}"
@@ -132,6 +133,7 @@ def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") ->
             df1_metrics.to_excel(writer, sheet_name=f"Métricas {name1}")
             df2.to_excel(writer, sheet_name=name2, index=False)
             df2_metrics.to_excel(writer, sheet_name=f"Métricas {name2}")
+            df_comparation.to_excel(writer, sheet_name="Comparação")
         return True
     except Exception as e:
         print(f"Deu merda: {e}")

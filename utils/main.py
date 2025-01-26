@@ -32,7 +32,7 @@ def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list) -> pd.DataFr
     return new_df
 
 
-def get_list_dict_metrics(df_only_numeric: pd.DataFrame) -> list[Dict]:
+def get_list_dict_metrics(df_only_numeric: pd.DataFrame) -> List[Dict]:
     """Cálcula o máximo, mínimo, a média e a soma para todos os campos do dataframe enviado.
 
     Args:
@@ -93,6 +93,27 @@ def get_dataframe_from_list_dict(list_dicio: List[Dict]) -> pd.DataFrame:
     
     df_all = pd.concat(lista_dataframes, ignore_index=True) 
     return df_all
+
+def compare_numeric_dataframes(df1: pd.DataFrame, df2: pd.DataFrame) -> List[Dict]:
+    list1, list2 = list(df1["name"]), list(df2["name"])
+    list_comparation = []
+    if list1 == list2:
+        #TODO: pensar em como fazer caso o contrário
+        for name in list1:
+            #caso em que os dois arquivos possuem os mesmos campos numéricos
+            df_n1, df_n2 = df1.loc[df1["name"] == name], df2.loc[df2["name"] == name]
+            list_comparation.append(
+                {name:
+                 {
+                     "diff_max": float(df_n1["max"] - df_n2["max"]),
+                     "diff_min": float(df_n1["min"] - df_n2["min"]),
+                     "diff_avg": float(df_n1["avg"] - df_n2["avg"]),
+                     "diff_sum": float(df_n1["sum"] - df_n2["sum"])
+                 }}
+            )
+            print("OK")
+    return list_comparation
+
 
 def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") -> Tuple[pd.DataFrame]:
     df1 = get_dataframe(path1, sep)

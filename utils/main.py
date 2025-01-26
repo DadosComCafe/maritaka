@@ -124,7 +124,8 @@ def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") ->
     list_metrics2 = get_list_dict_metrics(df2n)
     df1_metrics = get_dataframe_from_list_dict(list_metrics1)
     df2_metrics = get_dataframe_from_list_dict(list_metrics2)
-    df_comparation = compare_numeric_dataframes(df1=df1_metrics, df2=df2_metrics)
+    list_dict_comparation = compare_numeric_dataframes(df1=df1_metrics, df2=df2_metrics)
+    df_comparation = get_dataframe_from_list_dict(list_dict_comparation)
     try:
         with pd.ExcelWriter('analise_quantitativa.xlsx', engine="openpyxl") as writer:
             name1 = f"{path1.split(".")[0]}"
@@ -143,14 +144,12 @@ def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") ->
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--filename")
+    parser.add_argument("-f1", "--filename1")
+    parser.add_argument("-f2", "--filename2")
+    #parser.add_argument("-l", "--list_fields")
     argumento = parser.parse_args()
-    file = argumento.filename
-    df = get_dataframe(file)
-    list_fields = ["Sodium", "Carbs", "Fiber", "Sugars", "Protein", "WeightWatchersPnts"]
-    df_only_numeric = get_dataframe_only_numeric(df, list_fields)
-    list_metrics = get_list_dict_metrics(df_only_numeric)
-    df_metrics = get_dataframe_from_list_dict(list_metrics)
-    with pd.ExcelWriter('analise_quantitativa.xlsx', engine='openpyxl') as writer:
-        df.to_excel(writer, sheet_name='Conteúdo do Arquivo', index=False)
-        df_metrics.to_excel(writer, sheet_name='Métricas', index=False)
+    file1 = argumento.filename1
+    file2 = argumento.filename2
+    #fields_list = argumento.list_fields
+    print(file1, file2)
+    get_couple_dataframes(path1=file1, path2=file2, list_fields=["Sodium", "Carbs", "Fiber", "Sugars", "Protein", "WeightWatchersPnts"])

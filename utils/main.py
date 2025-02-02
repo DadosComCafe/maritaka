@@ -16,7 +16,7 @@ def get_dataframe(path: str, sep: str=",") -> pd.DataFrame:
     return pd.read_csv(path, sep=sep)
 
 
-def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list) -> pd.DataFrame:
+def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list=[]) -> pd.DataFrame:
     """Manipula o dataframe garantindo que os campos passados estejam presentes no dataframe retornado como campos float  
 
     Args:
@@ -26,9 +26,17 @@ def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list) -> pd.DataFr
     Returns:
         pd.DataFrame: Um dataframe com somente os campos informados, estes campos serão todos do tipo float.
     """
-    new_df = pd.DataFrame()
-    for field in list_fields:
-        new_df[field] = pd.to_numeric(df[field], errors="coerce")
+    if len(list_fields) > 0:
+        new_df = pd.DataFrame()
+        for field in list_fields:
+            new_df[field] = pd.to_numeric(df[field], errors="coerce")
+        return new_df
+
+    #TODO: melhorar a documentação desta função
+    #agora não é obrigatório passar as chaves
+    dicio_types = get_dataframe_numeric_fields(df=df)
+    numeric_keys = [key for key, value in dicio_types.items() if value in ["int64", "float64"]]
+    new_df = df[numeric_keys]
     return new_df
 
 

@@ -141,6 +141,14 @@ def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") ->
     #return final_df1, final_df2
 
 
+def get_dataframe_numeric_fields(df: pd.DataFrame) -> dict | False:
+    dicio_types = {key: str(df.dtypes[key]) for key in df.keys()}
+    if "int64" in dicio_types.values() or "float64" in dicio_types.values():
+        return dicio_types
+    return False
+    
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()

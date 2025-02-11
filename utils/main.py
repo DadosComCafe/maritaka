@@ -35,7 +35,10 @@ def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list=[]) -> pd.Dat
     #TODO: melhorar a documentação desta função
     #agora não é obrigatório passar as chaves
     dicio_types = get_dataframe_numeric_fields(df=df)
-
+    print(dicio_types)
+    if not dicio_types:
+        print("Campos devem ser informados, pois o documento analisado possui todos os campos como string!")
+        return exit()
     numeric_keys = [key for key, value in dicio_types.items() if value in ["int64", "float64"]]
     new_df = df[numeric_keys]
     return new_df
@@ -153,6 +156,7 @@ def get_couple_dataframes(path1: str, path2: str, list_fields: list=[], sep=",")
 def get_dataframe_numeric_fields(df: pd.DataFrame) -> dict | bool:
     #TODO Erro aqui
     dicio_types = {key: str(df.dtypes[key]) for key in df.keys()}
+    print(dicio_types)
     if "int64" in dicio_types.values() or "float64" in dicio_types.values():
         return dicio_types
     return False

@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
 
@@ -16,7 +16,7 @@ def get_dataframe(path: str, sep: str=",") -> pd.DataFrame:
     return pd.read_csv(path, sep=sep)
 
 
-def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list) -> pd.DataFrame:
+def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list=[]) -> pd.DataFrame:
     """Manipula o dataframe garantindo que os campos passados estejam presentes no dataframe retornado como campos float  
 
     Args:
@@ -26,13 +26,21 @@ def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list) -> pd.DataFr
     Returns:
         pd.DataFrame: Um dataframe com somente os campos informados, estes campos serão todos do tipo float.
     """
-    new_df = pd.DataFrame()
-    for field in list_fields:
-        new_df[field] = pd.to_numeric(df[field], errors="coerce")
+    if len(list_fields) > 0:
+        new_df = pd.DataFrame()
+        for field in list_fields:
+            new_df[field] = pd.to_numeric(df[field], errors="coerce")
+        return new_df
+
+    #TODO: melhorar a documentação desta função
+    #agora não é obrigatório passar as chaves
+    dicio_types = get_dataframe_numeric_fields(df=df)
+    numeric_keys = [key for key, value in dicio_types.items() if value in ["int64", "float64"]]
+    new_df = df[numeric_keys]
     return new_df
 
 
-def get_list_dict_metrics(df_only_numeric: pd.DataFrame) -> list[Dict]:
+def get_list_dict_metrics(df_only_numeric: pd.DataFrame) -> List[Dict]:
     """Cálcula o máximo, mínimo, a média e a soma para todos os campos do dataframe enviado.
 
     Args:
@@ -94,19 +102,70 @@ def get_dataframe_from_list_dict(list_dicio: List[Dict]) -> pd.DataFrame:
     df_all = pd.concat(lista_dataframes, ignore_index=True) 
     return df_all
 
+def compare_numeric_dataframes(df1: pd.DataFrame, df2: pd.DataFrame) -> List[Dict]:
+    list1, list2 = list(df1["name"]), list(df2["name"])
+    list_comparation = []
+    if list1 == list2:
+        #TODO: pensar em como fazer caso o contrário
+        for name in list1:
+            #caso em que os dois arquivos possuem os mesmos campos numéricos
+            df_n1, df_n2 = df1.loc[df1["name"] == name], df2.loc[df2["name"] == name]
+            list_comparation.append(
+                {name:
+                 {
+                     "diff_max": float(df_n1["max"] - df_n2["max"]),
+                     "diff_min": float(df_n1["min"] - df_n2["min"]),
+                     "diff_avg": float(df_n1["avg"] - df_n2["avg"]),
+                     "diff_sum": float(df_n1["sum"] - df_n2["sum"])
+                 }}
+            )
+            print("OK")
+    return list_comparation
+
+
+def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") -> Tuple[pd.DataFrame]:
+    df1 = get_dataframe(path1, sep)
+    df2 = get_dataframe(path2, sep)
+    df1n = get_dataframe_only_numeric(df1, list_fields)
+    df2n = get_dataframe_only_numeric(df2, list_fields)
+    list_metrics1 = get_list_dict_metrics(df1n)
+    list_metrics2 = get_list_dict_metrics(df2n)
+    df1_metrics = get_dataframe_from_list_dict(list_metrics1)
+    df2_metrics = get_dataframe_from_list_dict(list_metrics2)
+    list_dict_comparation = compare_numeric_dataframes(df1=df1_metrics, df2=df2_metrics)
+    df_comparation = get_dataframe_from_list_dict(list_dict_comparation)
+    try:
+        with pd.ExcelWriter('analise_quantitativa.xlsx', engine="openpyxl") as writer:
+            name1 = f"{path1.split(".")[0]}"
+            name2 = f"{path2.split(".")[0]}"
+            df1.to_excel(writer, sheet_name=name1, index=False)
+            df1_metrics.to_excel(writer, sheet_name=f"Métricas {name1}")
+            df2.to_excel(writer, sheet_name=name2, index=False)
+            df2_metrics.to_excel(writer, sheet_name=f"Métricas {name2}")
+            df_comparation.to_excel(writer, sheet_name="Comparação")
+        return True
+    except Exception as e:
+        print(f"Deu merda: {e}")
+    #return final_df1, final_df2
+
+
+def get_dataframe_numeric_fields(df: pd.DataFrame) -> dict | False:
+    dicio_types = {key: str(df.dtypes[key]) for key in df.keys()}
+    if "int64" in dicio_types.values() or "float64" in dicio_types.values():
+        return dicio_types
+    return False
+    
 
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--filename")
+    parser.add_argument("-f1", "--filename1")
+    parser.add_argument("-f2", "--filename2")
+    #parser.add_argument("-l", "--list_fields")
     argumento = parser.parse_args()
-    file = argumento.filename
-    df = get_dataframe(file)
-    list_fields = ["Sodium", "Carbs", "Fiber", "Sugars", "Protein", "WeightWatchersPnts"]
-    df_only_numeric = get_dataframe_only_numeric(df, list_fields)
-    list_metrics = get_list_dict_metrics(df_only_numeric)
-    df_metrics = get_dataframe_from_list_dict(list_metrics)
-    with pd.ExcelWriter('analise_quantitativa.xlsx', engine='openpyxl') as writer:
-        df.to_excel(writer, sheet_name='Conteúdo do Arquivo', index=False)
-        df_metrics.to_excel(writer, sheet_name='Métricas', index=False)
+    file1 = argumento.filename1
+    file2 = argumento.filename2
+    #fields_list = argumento.list_fields
+    print(file1, file2)
+    get_couple_dataframes(path1=file1, path2=file2, list_fields=["Sodium", "Carbs", "Fiber", "Sugars", "Protein", "WeightWatchersPnts"])

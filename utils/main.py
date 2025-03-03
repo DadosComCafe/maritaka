@@ -35,6 +35,10 @@ def get_dataframe_only_numeric(df: pd.DataFrame, list_fields: list=[]) -> pd.Dat
     #TODO: melhorar a documentação desta função
     #agora não é obrigatório passar as chaves
     dicio_types = get_dataframe_numeric_fields(df=df)
+    print(dicio_types)
+    if not dicio_types:
+        print("Campos devem ser informados, pois o documento analisado possui todos os campos como string!")
+        return exit()
     numeric_keys = [key for key, value in dicio_types.items() if value in ["int64", "float64"]]
     new_df = df[numeric_keys]
     return new_df
@@ -123,7 +127,7 @@ def compare_numeric_dataframes(df1: pd.DataFrame, df2: pd.DataFrame) -> List[Dic
     return list_comparation
 
 
-def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") -> Tuple[pd.DataFrame]:
+def get_couple_dataframes(path1: str, path2: str, list_fields: list=[], sep=",") -> Tuple[pd.DataFrame]:
     df1 = get_dataframe(path1, sep)
     df2 = get_dataframe(path2, sep)
     df1n = get_dataframe_only_numeric(df1, list_fields)
@@ -149,12 +153,13 @@ def get_couple_dataframes(path1: str, path2: str, list_fields: list, sep=",") ->
     #return final_df1, final_df2
 
 
-def get_dataframe_numeric_fields(df: pd.DataFrame) -> dict | False:
+def get_dataframe_numeric_fields(df: pd.DataFrame) -> dict:
     dicio_types = {key: str(df.dtypes[key]) for key in df.keys()}
-    if "int64" in dicio_types.values() or "float64" in dicio_types.values():
-        return dicio_types
-    return False
-    
+    new_dicio = {}
+    for key, value in dicio_types.items():
+        if value in ("int64", "float64"):
+            new_dicio[key] = value
+    return new_dicio
 
 
 if __name__ == "__main__":
@@ -168,4 +173,5 @@ if __name__ == "__main__":
     file2 = argumento.filename2
     #fields_list = argumento.list_fields
     print(file1, file2)
-    get_couple_dataframes(path1=file1, path2=file2, list_fields=["Sodium", "Carbs", "Fiber", "Sugars", "Protein", "WeightWatchersPnts"])
+    #get_couple_dataframes(path1=file1, path2=file2, list_fields=["Sodium", "Carbs", "Fiber", "Sugars", "Protein", "WeightWatchersPnts"])
+    get_couple_dataframes(path1=file1, path2=file2)
